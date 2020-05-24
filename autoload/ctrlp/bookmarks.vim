@@ -20,7 +20,7 @@ function! ctrlp#bookmarks#init() abort
         let l:line_nrs = sort(bm#all_lines(l:file), "bm#compare_lines")
         for l:line_nr in l:line_nrs
             let l:bookmark = bm#get_bookmark_by_line(l:file, l:line_nr)
-            let l:detail = printf("%s", l:bookmark.annotation !~ '^\s*$' ?
+            let l:detail = printf("%s| %s", l:file, l:bookmark.annotation !~ '^\s*$' ?
                   \ l:bookmark.annotation 
                   \ : l:bookmark.content !~ '^\s*$' ?
                   \ l:bookmark.content 
@@ -42,27 +42,28 @@ function! ctrlp#bookmarks#accept(mode, str) abort
       let l:HowToOpen='sp'
   endif
   call ctrlp#exit()
-    let l:text=[]
-    let l:files = sort(bm#all_files())
-    for l:file in l:files
-        let l:line_nrs = sort(bm#all_lines(l:file), "bm#compare_lines")
-        for l:line_nr in l:line_nrs
-            let l:bookmark = bm#get_bookmark_by_line(l:file, l:line_nr)
-            if a:str ==# l:bookmark.annotation 
-                execute l:HowToOpen." ".l:file
-                execute ":".l:line_nr
-                break
-            elseif a:str ==# l:bookmark.content
-                execute l:HowToOpen." ".l:file
-                execute ":".l:line_nr
-                break
-            elseif a:str ==# "EMPTY LINE"
-                execute l:HowToOpen." ".l:file
-                execute ":".l:line_nr
-                break
-            endif
-        endfor
+  let l:str = a:str[stridx(a:str, '|')+2:]
+  let l:text=[]
+  let l:files = sort(bm#all_files())
+  for l:file in l:files
+    let l:line_nrs = sort(bm#all_lines(l:file), "bm#compare_lines")
+    for l:line_nr in l:line_nrs
+      let l:bookmark = bm#get_bookmark_by_line(l:file, l:line_nr)
+      if l:str ==# l:bookmark.annotation 
+        execute l:HowToOpen." ".l:file
+        execute ":".l:line_nr
+        break
+      elseif l:str ==# l:bookmark.content
+        execute l:HowToOpen." ".l:file
+        execute ":".l:line_nr
+        break
+      elseif l:str ==# "EMPTY LINE"
+        execute l:HowToOpen." ".l:file
+        execute ":".l:line_nr
+        break
+      endif
     endfor
+  endfor
 endfunction
 
 let s:id = g:ctrlp_builtins + len(g:ctrlp_ext_vars)
